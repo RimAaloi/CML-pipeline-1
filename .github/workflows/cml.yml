@@ -8,61 +8,39 @@ on:
 permissions: write-all
 
 jobs:
-  run-cml-pipeline:
+  train-and-report:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install matplotlib scikit-learn pandas numpy seaborn joblib
 
-      - name: Train model
-        run: |
-          python src/train.py
+    - name: Create directories
+      run: |
+        mkdir -p outputs
+        mkdir -p metrics
 
-      - name: Evaluate model and generate report
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python src/evaluate.py
-          
-          # Créer le rapport CML
-          echo "# 🎯 Rapport CML - Classification Iris" > report.md
-          echo "" >> report.md
-          echo "## 📊 Métriques Principales" >> report.md
-          echo "" >> report.md
-          echo "| Métrique | Valeur |" >> report.md
-          echo "|----------|--------|" >> report.md
-          echo "| **Accuracy** | $(cat metrics/accuracy.txt) |" >> report.md
-          echo "| **Log Loss** | $(cat metrics/loss.txt) |" >> report.md
-          echo "" >> report.md
-          echo "## 📈 Visualisations" >> report.md
-          echo "" >> report.md
-          echo "### Matrice de Confusion" >> report.md
-          echo "![Confusion Matrix](outputs/confusion_matrix.png)" >> report.md
-          echo "" >> report.md
-          echo "### Importance des Features" >> report.md
-          echo "![Feature Importance](outputs/feature_importance.png)" >> report.md
-          echo "" >> report.md
-          echo "### Distribution des Classes" >> report.md
-          echo "![Class Distribution](outputs/class_distribution.png)" >> report.md
-          echo "" >> report.md
-          echo "## 📋 Détails du Modèle" >> report.md
-          echo "" >> report.md
-          echo "- **Algorithme**: Random Forest" >> report.md
-          echo "- **Dataset**: Iris (scikit-learn)" >> report.md
-          echo "- **Nombre de classes**: 3" >> report.md
-          echo "- **Features**: 4" >> report.md
-          echo "" >> report.md
-          echo "*Rapport généré automatiquement par CML*" >> report.md
-          
-          # Publier le rapport
-          cml comment create report.md
+    - name: Train model
+      run: |
+        python src/train.py
+
+    - name: Evaluate model
+      run: |
+        python src/evaluate.py
+
+    - name: Create CML report
+      uses: iterativeai/cml@v0.8.15
+      env:
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        file: report.md

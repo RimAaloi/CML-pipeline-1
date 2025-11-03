@@ -2,61 +2,57 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.datasets import load_iris
 from sklearn.metrics import confusion_matrix
-import pandas as pd
 import joblib
 import numpy as np
 
-# Charger le modèle et les données
+print("=== DÉMARRAGE ÉVALUATION ===")
+
+# Charger modèle
 model = joblib.load('outputs/iris_model.pkl')
 iris = load_iris()
-X, y = iris.data, iris.target
 
-# Re-split pour cohérence
+# Recréer données de test
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=42, stratify=y
-)
+X, y = iris.data, iris.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
 y_pred = model.predict(X_test)
 
 # 1. Matrice de confusion
 plt.figure(figsize=(8, 6))
 cm = confusion_matrix(y_test, y_pred)
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-            xticklabels=iris.target_names, 
-            yticklabels=iris.target_names)
-plt.title('Matrice de Confusion - Iris Dataset')
-plt.ylabel('Vraie Classe')
-plt.xlabel('Classe Prédite')
-plt.tight_layout()
-plt.savefig('outputs/confusion_matrix.png', dpi=300, bbox_inches='tight')
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.title('Matrice de Confusion - Iris')
+plt.savefig('outputs/confusion_matrix.png')
 plt.close()
 
 # 2. Importance des features
 plt.figure(figsize=(10, 6))
-feature_importance = model.feature_importances_
-features = iris.feature_names
-indices = np.argsort(feature_importance)[::-1]
-
-plt.barh(range(len(features)), feature_importance[indices])
-plt.yticks(range(len(features)), [features[i] for i in indices])
-plt.title('Importance des Features - Random Forest')
-plt.xlabel('Importance')
-plt.tight_layout()
-plt.savefig('outputs/feature_importance.png', dpi=300, bbox_inches='tight')
+importance = model.feature_importances_
+plt.barh(iris.feature_names, importance)
+plt.title('Importance des Features')
+plt.savefig('outputs/feature_importance.png')
 plt.close()
 
-# 3. Distribution des classes
-plt.figure(figsize=(8, 6))
-class_dist = pd.Series(y).value_counts()
-plt.bar(iris.target_names, class_dist.values, 
-        color=['skyblue', 'lightcoral', 'lightgreen'])
-plt.title('Distribution des Classes - Iris Dataset')
-plt.ylabel('Nombre d\'échantillons')
-for i, v in enumerate(class_dist.values):
-    plt.text(i, v + 1, str(v), ha='center', va='bottom')
-plt.tight_layout()
-plt.savefig('outputs/class_distribution.png', dpi=300, bbox_inches='tight')
-plt.close()
+print("✅ Graphiques générés!")
 
-print("✅ Graphiques générés dans le dossier outputs/")
+# Créer rapport CML
+with open('report.md', 'w') as f:
+    f.write("# 🌸 Rapport CML - Classification Iris\n\n")
+    f.write("## 📊 Résultats\n\n")
+    
+    with open('metrics/accuracy.txt', 'r') as acc_file:
+        accuracy = acc_file.read().strip()
+    
+    with open('metrics/loss.txt', 'r') as loss_file:
+        loss = loss_file.read().strip()
+    
+    f.write(f"- **Accuracy**: {accuracy}\n")
+    f.write(f"- **Log Loss**: {loss}\n\n")
+    f.write("## 📈 Visualisations\n\n")
+    f.write("### Matrice de Confusion\n")
+    f.write("![Matrice de Confusion](outputs/confusion_matrix.png)\n\n")
+    f.write("### Importance des Features\n")
+    f.write("![Importance des Features](outputs/feature_importance.png)\n")
+
+print("✅ Rapport CML créé!")
