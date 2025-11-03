@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Modèles (optionnel - vous pouvez les versionner si petits)
+*.pkl
+*.joblib
+*.h5
+
+# Dossiers de sortie (sauf pour les métriques)
+outputs/
+!metrics/

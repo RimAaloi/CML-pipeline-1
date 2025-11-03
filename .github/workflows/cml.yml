@@ -1,45 +1,68 @@
-name: CML-Pipeline
-
-on: 
+name: CML-Iris-Pipeline
+on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
 permissions: write-all
 
 jobs:
-  train-and-report:
+  run-cml-pipeline:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
-      - name: Set up Python
+
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-      
+          python-version: '3.9'
+
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
           pip install -r requirements.txt
-      
+
       - name: Train model
         run: |
-          python train.py
-      
-      - name: Create CML report
+          python src/train.py
+
+      - name: Evaluate model and generate report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm install -g @dvcorg/cml
+          python src/evaluate.py
           
-          echo "## Métriques du modèle" > report.md
+          # Créer le rapport CML
+          echo "# 🎯 Rapport CML - Classification Iris" > report.md
           echo "" >> report.md
-          cat metrics.json >> report.md
+          echo "## 📊 Métriques Principales" >> report.md
+          echo "" >> report.md
+          echo "| Métrique | Valeur |" >> report.md
+          echo "|----------|--------|" >> report.md
+          echo "| **Accuracy** | $(cat metrics/accuracy.txt) |" >> report.md
+          echo "| **Log Loss** | $(cat metrics/loss.txt) |" >> report.md
+          echo "" >> report.md
+          echo "## 📈 Visualisations" >> report.md
+          echo "" >> report.md
+          echo "### Matrice de Confusion" >> report.md
+          echo "![Confusion Matrix](outputs/confusion_matrix.png)" >> report.md
+          echo "" >> report.md
+          echo "### Importance des Features" >> report.md
+          echo "![Feature Importance](outputs/feature_importance.png)" >> report.md
+          echo "" >> report.md
+          echo "### Distribution des Classes" >> report.md
+          echo "![Class Distribution](outputs/class_distribution.png)" >> report.md
+          echo "" >> report.md
+          echo "## 📋 Détails du Modèle" >> report.md
+          echo "" >> report.md
+          echo "- **Algorithme**: Random Forest" >> report.md
+          echo "- **Dataset**: Iris (scikit-learn)" >> report.md
+          echo "- **Nombre de classes**: 3" >> report.md
+          echo "- **Features**: 4" >> report.md
+          echo "" >> report.md
+          echo "*Rapport généré automatiquement par CML*" >> report.md
           
+          # Publier le rapport
           cml comment create report.md
-
