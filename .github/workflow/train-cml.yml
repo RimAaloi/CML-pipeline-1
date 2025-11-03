@@ -1,6 +1,8 @@
 name: CML-Pipeline
 
-on: [push]
+on:
+  workflow_dispatch:   # ✅ active le bouton Run workflow manuellement
+
 permissions: write-all
 
 jobs:
@@ -30,10 +32,6 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm install -g @dvcorg/cml
-          
-          echo "## Métriques du modèle" > report.md
-          echo "" >> report.md
+          echo "## 📊 Résultats du modèle" > report.md
           cat metrics.json >> report.md
-          
           cml comment create report.md
-
