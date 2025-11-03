@@ -21,8 +21,12 @@ y_pred = model.predict(X_test)
 # 1. Matrice de confusion
 plt.figure(figsize=(8, 6))
 cm = confusion_matrix(y_test, y_pred)
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=iris.target_names, 
+            yticklabels=iris.target_names)
 plt.title('Matrice de Confusion - Iris')
+plt.ylabel('Vraie Classe')
+plt.xlabel('Classe Prédite')
 plt.savefig('outputs/confusion_matrix.png')
 plt.close()
 
@@ -36,23 +40,28 @@ plt.close()
 
 print("✅ Graphiques générés!")
 
-# Créer rapport CML
+# CRÉATION DU RAPPORT
 with open('report.md', 'w') as f:
     f.write("# 🌸 Rapport CML - Classification Iris\n\n")
-    f.write("## 📊 Résultats\n\n")
     
+    # Lire les métriques
     with open('metrics/accuracy.txt', 'r') as acc_file:
         accuracy = acc_file.read().strip()
     
     with open('metrics/loss.txt', 'r') as loss_file:
         loss = loss_file.read().strip()
     
+    f.write("## 📊 Métriques de Performance\n\n")
     f.write(f"- **Accuracy**: {accuracy}\n")
     f.write(f"- **Log Loss**: {loss}\n\n")
+    
     f.write("## 📈 Visualisations\n\n")
     f.write("### Matrice de Confusion\n")
     f.write("![Matrice de Confusion](outputs/confusion_matrix.png)\n\n")
     f.write("### Importance des Features\n")
-    f.write("![Importance des Features](outputs/feature_importance.png)\n")
+    f.write("![Importance des Features](outputs/feature_importance.png)\n\n")
+    
+    f.write("---\n")
+    f.write ("*Rapport généré automatiquement*")
 
-print("✅ Rapport CML créé!")
+print("✅ Rapport CML créé: report.md")

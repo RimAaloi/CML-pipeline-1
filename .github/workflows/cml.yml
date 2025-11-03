@@ -5,14 +5,12 @@ on:
   pull_request:
     branches: [main]
 
-permissions: write-all
-
 jobs:
-  train-and-report:
+  ml-pipeline:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Setup Python
@@ -22,25 +20,20 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        pip install --upgrade pip
         pip install matplotlib scikit-learn pandas numpy seaborn joblib
 
-    - name: Create directories
+    - name: Train and evaluate model
       run: |
-        mkdir -p outputs
-        mkdir -p metrics
-
-    - name: Train model
-      run: |
+        mkdir -p outputs metrics
         python src/train.py
-
-    - name: Evaluate model
-      run: |
         python src/evaluate.py
 
-    - name: Create CML report
-      uses: iterativeai/cml@v0.8.15
-      env:
-        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload results
+      uses: actions/upload-artifact@v3
       with:
-        file: report.md
+        name: ml-results
+        path: |
+          outputs/
+          metrics/
+          report.md
