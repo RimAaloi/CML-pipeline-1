@@ -1,27 +1,24 @@
 name: CML-Iris-Pipeline
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  ml-pipeline:
+  run:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4  # ✅ nouvelle version
+      uses: actions/checkout@v4
 
     - name: Setup Python
-      uses: actions/setup-python@v5  # ✅ version plus récente
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
 
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
         pip install -r requirements.txt
 
     - name: Train and evaluate model
@@ -30,30 +27,21 @@ jobs:
         python src/train.py
         python src/evaluate.py
 
-    - name: Upload results
-      uses: actions/upload-artifact@v4  # ✅ corrige la version
-      with:
-        name: ml-results
-        path: |
-          outputs/
-          metrics/
-          report.md
-    - name: Post CML report
-  env:
-    REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  run: |
-    npm install -g @dvcorg/cml
-    echo "## 🌸🌸 Rapport du modèle Iris 🌸🌸" > report.md
-    echo "" >> report.md
-    echo "### Accuracy" >> report.md
-    cat metrics/accuracy.txt >> report.md
-    echo "" >> report.md
-    echo "### Log Loss" >> report.md
-    cat metrics/loss.txt >> report.md
-    echo "" >> report.md
-    echo "### Matrice de Confusion" >> report.md
-    echo "![Matrice de Confusion](outputs/confusion_matrix.png)" >> report.md
-    echo "" >> report.md
-    echo "### Importance des Features" >> report.md
-    echo "![Importance des Features](outputs/feature_importance.png)" >> report.md
-    cml comment create report.md
+    - name: Create CML report
+      run: |
+        echo "# 🌸 Rapport automatique du modèle Iris" > report.md
+        echo "## 🎯 Précision du modèle" >> report.md
+        cat metrics/accuracy.txt >> report.md
+        echo "## 📉 Log Loss" >> report.md
+        cat metrics/loss.txt >> report.md
+        echo "## 📈 Matrice de confusion" >> report.md
+        echo "![Confusion Matrix](outputs/confusion_matrix.png)" >> report.md
+        echo "## 🔍 Importance des features" >> report.md
+        echo "![Feature Importance](outputs/feature_importance.png)" >> report.md
+
+    - name: Post report as comment
+      uses: iterative/setup-cml@v3
+    - run: |
+        cml comment create report.md
+      env:
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
