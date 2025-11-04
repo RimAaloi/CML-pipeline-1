@@ -1,4 +1,5 @@
 name: CML-Iris-Pipeline
+
 on:
   push:
     branches: [main]
@@ -11,17 +12,17 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4  # ✅ nouvelle version
 
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5  # ✅ version plus récente
       with:
         python-version: '3.9'
 
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install matplotlib scikit-learn pandas numpy seaborn joblib
+        pip install -r requirements.txt
 
     - name: Train and evaluate model
       run: |
@@ -30,7 +31,7 @@ jobs:
         python src/evaluate.py
 
     - name: Upload results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # ✅ corrige la version
       with:
         name: ml-results
         path: |
