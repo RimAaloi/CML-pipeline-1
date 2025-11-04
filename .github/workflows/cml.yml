@@ -38,3 +38,22 @@ jobs:
           outputs/
           metrics/
           report.md
+    - name: Post CML report
+  env:
+    REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run: |
+    npm install -g @dvcorg/cml
+    echo "## 🌸 Rapport du modèle Iris" > report.md
+    echo "" >> report.md
+    echo "### Accuracy" >> report.md
+    cat metrics/accuracy.txt >> report.md
+    echo "" >> report.md
+    echo "### Log Loss" >> report.md
+    cat metrics/loss.txt >> report.md
+    echo "" >> report.md
+    echo "### Matrice de Confusion" >> report.md
+    echo "![Matrice de Confusion](outputs/confusion_matrix.png)" >> report.md
+    echo "" >> report.md
+    echo "### Importance des Features" >> report.md
+    echo "![Importance des Features](outputs/feature_importance.png)" >> report.md
+    cml comment create report.md
