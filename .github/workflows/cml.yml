@@ -43,7 +43,7 @@ jobs:
     REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   run: |
     npm install -g @dvcorg/cml
-    echo "## 🌸 Rapport du modèle Iris" > report.md
+    echo "## 🌸🌸 Rapport du modèle Iris 🌸🌸" > report.md
     echo "" >> report.md
     echo "### Accuracy" >> report.md
     cat metrics/accuracy.txt >> report.md
